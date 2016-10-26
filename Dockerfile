@@ -1,29 +1,18 @@
-FROM ctdcto23:5000/java:latest
-
-#===============================================================================
-#update system to install python-virtualenv
-#check docker image ctdcto23:5000/python
-#===============================================================================
-RUN apt-get update
-RUN apt-get install -fy python-virtualenv
-RUN apt-get install -fy python-pip
+FROM python:2.7.12
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 #===============================================================================
 # Add ucc-data-ingestion artifacts
 #===============================================================================
 RUN mkdir -p /prometheus/ucc-data-ingestion
-RUN mkdir -p /shared/storage/ucc/testdir_fromucc
-ADD . /prometheus/ucc-data-ingestion
-RUN chmod a+x /prometheus/docker_run.sh
-
+ADD . /prometheus/ucc-service
+RUN cd /prometheus/ucc-service &&  chmod a+x docker_run.sh && rm -rf env && virtualenv env && source env/bin/activate && pip install -r requirements.txt
 
 #===============================================================================
 #mount ssh key and shared storage 
 #===============================================================================
-VOLUME ["/prometheus/keys"]
-VOLUME ["/shared/storage/ucc/testdir_fromucc"]
 
 #===============================================================================
 # Launch the entrypoint script.
 #===============================================================================
-#ENTRYPOINT ["/prometheus/docker_run.sh"]
+ENTRYPOINT ["/prometheus/ucc-service/docker_run.sh"]
